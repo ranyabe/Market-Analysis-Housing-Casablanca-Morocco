@@ -1,7 +1,6 @@
-# Market-Analysis-Housing-Casablanca-Morocco
+# Market Analysis: Housing in Casablanca, Morocco
 
-
-**Predicting property prices in Casablanca, Morocco using advanced regression models**
+**Accurate property price estimation using advanced regression models and automated workflows**
 
 ## Table of Contents
 - [Introduction](#introduction)
@@ -17,59 +16,71 @@
 - [License](#license)
 
 ## Introduction
-Accurately estimating property prices is crucial for both sellers and buyers. This project combines web scraping, data cleaning, exploratory analysis, and state-of-the-art regression techniques to provide reliable price recommendations for Casablanca’s dynamic real estate market.
+Estimating property prices accurately is essential for sellers, buyers, and real estate professionals. This project leverages end-to-end data acquisition, cleaning, exploratory analysis, and cutting-edge regression techniques to deliver reliable price recommendations tailored to Casablanca’s diverse neighborhoods.
 
 ## Features
-- **Automated Data Acquisition:** Scrape 3000+ listings from Mubawab.ma using Selenium.
-- **Robust Data Cleaning:** Extract and structure embedded tags, handle missing values, and remove duplicates.
-- **Outlier Management:** Apply rational thresholds and iterative z‑score filtering to ensure data integrity.
-- **In-depth EDA:** Visualize price distributions, neighborhood trends, and feature correlations.
-- **Comprehensive Model Suite:** Train and optimize Linear, Ridge, Lasso, Random Forest, and Gradient Boosting regressors with GridSearchCV.
-- **Clear Performance Metrics:** Evaluate models with MAPE for interpretability and R² for variance explanation.
+- **Automated Data Acquisition:** Scrape 3,000+ listings from Mubawab.ma with Selenium.
+- **Comprehensive Cleaning:** Parse embedded tags, handle missing values, drop duplicates, and standardize formats.
+- **Outlier Management:** Remove listings below 3,000 MAD/m² and apply iterative z-score filtering to detect anomalies.
+- **Insightful EDA:** Visualize distribution of prices, neighborhood-specific trends, and feature correlations.
+- **Full Modeling Suite:** Train and tune Linear, Ridge, Lasso, Random Forest, and Gradient Boosting regressors via GridSearchCV.
+- **Clear Metrics:** Use MAPE for interpretability and R² for variance explanation.
 
 ## Data Collection
-The Selenium-driven scraper captures:
-- Property type, title, neighborhood, latitude/longitude
-- Tags: area, rooms, bedrooms, bathrooms, floor, building age, condition, price
+The Selenium scraper extracts:
+- **Property metadata:** type, title, neighborhood, latitude/longitude
+- **Listing tags:** area, rooms, bedrooms, bathrooms, floor, building age, condition, price
 
 ## Data Processing
-1. Parse numeric values (price, area, etc.)
-2. Expand tag lists into individual columns
-3. Handle missing entries and drop incomplete rows
-4. Compute price per m²
-5. Merge underrepresented categories (e.g., Villas + Maisons)
-6. Remove outliers below 3,000 MAD/m² and refine with iterative z‑score filtering
+1. Extract numeric values from strings (price, area, etc.)
+2. Expand tag lists into separate columns
+3. Impute or drop missing entries
+4. Calculate price per m²
+5. Merge low-frequency categories (e.g., Maisons + Riads → Villas)
+6. Filter outliers (< 3,000 MAD/m²) and refine with two rounds of z-score filtering
 
 ## Exploratory Data Analysis
-- Distribution of listings by type and neighborhood
-- Boxplots of price per m² to detect anomalies
-- Correlation heatmaps to inform feature selection
+- Distribution of listings by property type and neighborhood
+- Boxplots of price per m² to highlight anomalies
+- Correlation heatmap to guide feature selection
 
 ## Modeling & Evaluation
 ```python
-from sklearn.linear_model import Ridge
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import GridSearchCV
 
-params = {'alpha': [0.01, 0.1, 1, 10]}
-model = GridSearchCV(Ridge(), params, cv=5, scoring='neg_mean_absolute_percentage_error')
+params = {
+    'learning_rate': [0.01, 0.1],
+    'max_depth': [3, 5],
+    'n_estimators': [100, 200]
+}
+gbr = GridSearchCV(
+    GradientBoostingRegressor(),
+    params,
+    cv=5,
+    scoring='neg_mean_absolute_percentage_error'
+)
 ```  
 **Model Performance:**
 | Model                        | Test MAPE | Test R² |
 | ---------------------------- | --------- | ------- |
 | Linear Regression            | 23.9%     | 0.90    |
 | Ridge (α=0.1)                | 23.9%     | 0.90    |
-| Polynomial (degree=2)        | 25.5%     | 0.92    |
-| Random Forest (depth=10)     | 18.8%     | 0.94    |
-| Gradient Boosting (lr=0.1)   | 17.1%     | 0.94    |
+| Polynomial (degree 2)        | 25.5%     | 0.92    |
+| Random Forest (depth 10)     | 18.8%     | 0.94    |
+| Gradient Boosting (lr 0.1)   | 17.1%     | 0.94    |
+
+## Results
+The Gradient Boosting model achieved the lowest MAPE (~17.1%) and captured 94% of variance (R²) on the test set, offering robust performance across Casablanca’s varied markets.
 
 ## Tech Stack
 - **Python 3.8**
-- Libraries: pandas, numpy, scikit-learn, matplotlib, seaborn, selenium, pickle
+- **Libraries:** pandas, numpy, scikit-learn, matplotlib, seaborn, selenium, pickle
 
 ## Getting Started
-1. **Clone the repo**
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/username/Casablanca-House-Prices.git
+   git clone https://github.com/username/Market-Analysis-Housing-Casablanca-Morocco.git
    ```
 2. **Install dependencies**
    ```bash
@@ -79,12 +90,13 @@ model = GridSearchCV(Ridge(), params, cv=5, scoring='neg_mean_absolute_percentag
    ```bash
    python scraper.py
    ```
-4. **Explore notebooks** for EDA and model training
+4. **Launch Jupyter notebooks** for EDA and model training
 
 ## Future Improvements
-- Integrate actual transaction data for enhanced accuracy
-- Add interactive geospatial visualizations
-- Deploy as a web service for real-time price estimates
+- Integrate official transaction data for enhanced accuracy
+- Deploy an interactive web API for real-time price estimates
+- Add geospatial dashboards with Folium or Plotly
+- Implement automated retraining on schedule to adapt to market shifts
 
 ## License
-Distributed under the MIT License. Feel free to contribute and share!
+This project is licensed under the MIT License.
