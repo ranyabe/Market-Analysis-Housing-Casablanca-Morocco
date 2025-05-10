@@ -82,30 +82,26 @@ def get_listings_pages(browser, ard, qrt = None, n_pages = None):
         qrt: if it was used, the neighbourhood selected to land on listings page, otherwise None
         n_pages: the number of pages to scrape from listings pages, if None will scrape all pages
     '''
-    #initialize an empty array to store the listings info
+    
     listings_info = []
     if not on_listings_page(browser):
         raise Exception('Not a listings page')
     else:
         n_pages_avl = len(browser.find_elements_by_class_name('Dots'))
         if n_pages is None:
-            #initialize variable to stop the function when the last page has been ran through
             last_page = False
-            i=1 #for debugging
+            i=1 
             while not last_page:
                 n_listings = len(browser.find_elements_by_xpath("//li[@class='listingBox w100']"))
                 print(f'    should get {n_listings} listings from page {i}') #for debugging
                 for n in range(n_listings):
                     ls = get_listing(browser,ard=ard,qrt=qrt,n=n)
                     listings_info.append(ls)
-                    
-                #go to next page if not on last page
                 try:
                     arrows = browser.find_elements_by_class_name('arrowDot')
                     arrows[1].click()  
-                    i+=1 #for debugging
-                #if on last page stop 
-                except : #ElementClickInterceptedException removed
+                    i+=1
+                except : 
                     last_page = True
             return listings_info
     
@@ -115,7 +111,7 @@ def get_listings_pages(browser, ard, qrt = None, n_pages = None):
                 n_pages = n_pages_avl
             for i in range(n_pages):
                 n_listings = len(browser.find_elements_by_xpath("//li[@class='listingBox w100']"))
-                print(f'should get {n_listings} listings form page {i}') #for debugging
+                print(f'should get {n_listings} listings form page {i}')
                 for n in range(n_listings):
                     ls = get_listing(browser,ard=ard,qrt=qrt,n=n)
                     listings_info.append(ls)
@@ -123,7 +119,7 @@ def get_listings_pages(browser, ard, qrt = None, n_pages = None):
                 try:
                     arrows = browser.find_elements_by_class_name('arrowDot')
                     arrows[1].click()   
-                except : #ElementClickInterceptedException removed
+                except : 
                     last_page = True
             return listings_info
 
@@ -150,22 +146,21 @@ def get_city_listings(browser,city,n_pages=None):
     if not(isinstance(city,str)):
         raise TypeError('city must be of type string')
     else:
-        #initialize empty array to store all the different listings
+        
         all_data = []
         
-        #make the request to desired url
+        
         url = 'https://www.mubawab.ma/fr/mp/immobilier-a-vendre'
         browser.get(url)
         
-        # Code to wait for website to load   
-        # Wait 20 seconds for page to load
+        
         timeout = 20
         try:
             WebDriverWait(browser, timeout).until(EC.visibility_of_element_located((By.XPATH, "//div[@class='na-map']")))
         except TimeoutException:
             print("Timed out waiting for page to load")
             browser.quit()
-        #Select city and click on its button in the top cities list
+        
         city = city.lower()
         city_buttons = browser.find_elements_by_xpath('//*[@id="top-villes"]/div/div/button')
         for button in city_buttons:
@@ -176,7 +171,6 @@ def get_city_listings(browser,city,n_pages=None):
         except:
             print(f'{city} not in top cities')
     
-    # Wait up to 10 seconds for page to load or until map appears
     timeout = 10
     try:
         WebDriverWait(browser, timeout).until(EC.visibility_of_element_located((By.XPATH, "//div[@class='na-map']")))
@@ -184,31 +178,30 @@ def get_city_listings(browser,city,n_pages=None):
         print("Timed out waiting for district page to load")
         browser.quit()
     
-    url_ard = browser.current_url #Get the city's district selection page url to get back to it later
-    n_arrondissements = len(browser.find_elements_by_xpath('/html/body/section/div[2]/div[1]/div[2]/ul/li')) #Get the city's number districts to navigate
+    url_ard = browser.current_url 
+    n_arrondissements = len(browser.find_elements_by_xpath('/html/body/section/div[2]/div[1]/div[2]/ul/li')) 
     
-    #Start navigating district by district
     for n in range(1,n_arrondissements+1):
-        arrondissement = browser.find_element_by_xpath(f'/html/body/section/div[2]/div[1]/div[2]/ul/li[{n}]/a') #Locate the n'th district to select
-        ard_text = arrondissement.text #Get the district name
+        arrondissement = browser.find_element_by_xpath(f'/html/body/section/div[2]/div[1]/div[2]/ul/li[{n}]/a') 
+        ard_text = arrondissement.text
         arrondissement.click() 
         
-        if on_listings_page(browser): #Check it this is a listings page or a neighbourhood selection page
-            print(f'getting listings for {ard_text}') #To follow  progress along in headless mode
-            all_data.append(get_listings_pages(browser, ard=ard_text,n_pages = n_pages)) #Scrape all or n_pages pages of listings
-            browser.get(url_ard) #Go back to district selection page
+        if on_listings_page(browser): 
+            print(f'getting listings for {ard_text}') 
+            all_data.append(get_listings_pages(browser, ard=ard_text,n_pages = n_pages)) 
+            browser.get(url_ard) 
         else:
-            url_qrt = browser.current_url #Get the district's neighbourhood selection page url to get back to it later
-            n_quartiers = len(browser.find_elements_by_xpath('/html/body/section/div[2]/div[1]/div[2]/ul/li')) #Get the district's number of neighbourhoods to navigate
+            url_qrt = browser.current_url 
+            n_quartiers = len(browser.find_elements_by_xpath('/html/body/section/div[2]/div[1]/div[2]/ul/li')) 
             for nq in range(1,n_quartiers+1):
-                quartier = browser.find_element_by_xpath(f'/html/body/section/div[2]/div[1]/div[2]/ul/li[{nq}]/a') #Locate the nq'th neighbourhood to select
-                qrt_text = quartier.text #Get the neighbourhood name
+                quartier = browser.find_element_by_xpath(f'/html/body/section/div[2]/div[1]/div[2]/ul/li[{nq}]/a') 
+                qrt_text = quartier.text 
                 quartier.click()
-                #Scrape the listings for neighbourhood nq
-                print(f'getting listings for {ard_text}, {qrt_text}') #To follow progress along in headless mode
-                all_data.append(get_listings_pages(browser,ard = ard_text, qrt= qrt_text,n_pages = n_pages)) #Scrape all or n_pages pages of listings
-                browser.get(url_qrt) #Go back to neighbourhood selection page
-            browser.get(url_ard) #Go back to district selection page
+                
+                print(f'getting listings for {ard_text}, {qrt_text}') 
+                all_data.append(get_listings_pages(browser,ard = ard_text, qrt= qrt_text,n_pages = n_pages)) 
+                browser.get(url_qrt) 
+            browser.get(url_ard) 
     df = pd.concat([pd.DataFrame(lst) for lst in all_data]).reset_index(drop = True)
     df.columns = ['District','Neighbourhood','Type','Localisation','Latitude','Longitude','Title','Price','Tags']
     
